@@ -3,3 +3,7 @@ body, input {
     font: menu;
     font-size: 15px;
 }
+
+.mt20 {
+    margin-top: 20px;
+}

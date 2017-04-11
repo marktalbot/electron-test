@@ -35,6 +35,8 @@ const getFile = () => {
 
     const content = fs.readFileSync(files[0]).toString();
     console.log(content);
+    // Creating custom 'file-opened' event and sending file and content
+    mainWindow.webContents.send('file-opened', files[0], content);
 };
 
 exports.getFile = getFile;
