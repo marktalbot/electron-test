@@ -1,31 +1,34 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const fs = require('fs');
 
-let mainWindow = null; // Prevents window from being garbage collected
+const windows  = new Set();
+
+const createWindow = () => {
+    let newWindow = new BrowserWindow({ show: false });
+    windows.add(newWindow); // Add new window to the Set.
+
+    newWindow.loadURL(`file://${__dirname}/index.html`);
+
+    newWindow.on('ready-to-show', () => {
+        newWindow.show(); // Show when window is ready
+    });
+
+    newWindow.on('closed', () => {
+        windows.delete(newWindow); // Delete window from the Set
+        newWindow = null; // Clean up after we're done
+    });
+};
 
 app.on('ready', () => {
-    
-    mainWindow = new BrowserWindow({ 
-        height: 600, 
-        width: 800,
-        show: false,
-    });
-    
-    mainWindow.loadURL(`file://${__dirname}/index.html`);
-    
-    mainWindow.on('ready-to-show', () => {
-        mainWindow.show(); // Show when window is ready
-    });
-
-    mainWindow.on('closed', () => mainWindow = null); // Clean up after we're done
+    createWindow();
 });
 
-const getFile = () => {
-    const files = dialog.showOpenDialog(mainWindow, {
+const getFile = (currentWindow) => {
+    let files = dialog.showOpenDialog(currentWindow, {
         properties: ['openFile'],
         filters: [
-            { name: 'Your Text Files', extensions: ['txt', 'text'] },
-            { name: 'Your Markdown Files', extensions: ['md', 'markdown'] },
+            { name: 'Text Files', extensions: ['txt', 'text'] },
+            { name: 'Markdown Files', extensions: ['md', 'markdown'] },
         ]
     });
 
@@ -33,10 +36,17 @@ const getFile = () => {
         return;
     } 
 
-    const content = fs.readFileSync(files[0]).toString();
-    console.log(content);
-    // Creating custom 'file-opened' event and sending file and content
-    mainWindow.webContents.send('file-opened', files[0], content);
+    return files[0];
 };
 
-exports.getFile = getFile;
+const openFile = (currentWindow, filePath) => {
+    let file    = filePath || getFile(currentWindow); // If no file path, prompt user for file
+    let content = fs.readFileSync(file).toString();
+
+    currentWindow.webContents.send('file-opened', file, content);
+    currentWindow.setTitle(`${file} - MarkDownr`); // Sets title in window bar
+    currentWindow.setRepresentedFilename(file); // Adds file icon in window bar
+};
+
+exports.createWindow = createWindow;
+exports.openFile     = openFile;

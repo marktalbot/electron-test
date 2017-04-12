@@ -3,17 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>My Electron App</title>
-    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css">
+    <!-- <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"> -->
     <link rel="stylesheet" href="./css/main.css">
 </head>
 <body>
-    <h4>Hello Electron...</h4>
-    <h4>~</h4>
-    <ul id="file-list"></ul>
-    <div>
-        <a href="#" class="btn btn-success" id="open-file-btn">Open File</a>
-    </div>
-    <div id="file-content-area" class="well well-sm mt20 hidden"></div>
+    <section class="controls">
+        <button id="new-file">New File</button>
+        <button id="open-file">Open File</button>
+        <button id="save-markdown" disabled>Save File</button>
+        <button id="revert" disabled>Revert</button>
+        <button id="save-html">Save HTML</button>
+    </section>
+    <section class="content">
+        <label for="markdown" hidden>Markdown Content</label>
+        <textarea class="raw-markdown" id="markdown"></textarea>
+        <div class="rendered-html" id="html"></div>
+    </section>
     <script>
         require('./renderer.js');
     </script>

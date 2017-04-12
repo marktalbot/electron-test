@@ -1,27 +1,34 @@
 const { remote, ipcRenderer } = require('electron');
-const { getFile }             = remote.require('./main');
-const os                      = require('os');
-const fs                      = require('fs');
+const mainProcess             = remote.require('./main');
+const thisCurrentWindow       = remote.getCurrentWindow(); // Reference to current window
+const marked                  = require('marked');
 
-const files           = fs.readdirSync(os.homedir()); // Getting files from home dir
-const fileList        = document.querySelector('#file-list');
-const openFileButton  = document.querySelector('#open-file-btn');
-const fileContentArea = document.querySelector('#file-content-area');
+const newFileButton     = document.querySelector('#new-file');
+const openFileButton    = document.querySelector('#open-file');
+const revertButton      = document.querySelector('#revert');
+const saveHtmlButton    = document.querySelector('#save-html');
+const markdownContainer = document.querySelector('#markdown');
+const htmlContainer     = document.querySelector('#html');
 
-files.filter(name => name.charAt(0) !== '.')
-    .forEach(name => {
-        let fileListItem         = document.createElement('li'); // Adding elements to DOM
-        fileListItem.textContent = name;
-        fileList.appendChild(fileListItem);
-    }
-);
+const renderMarkdownToHtml = (markdown) => {
+    htmlContainer.innerHTML = marked(markdown, { sanitize: true });
+};
 
-openFileButton.addEventListener('click', () => {
-    getFile();
+newFileButton.addEventListener('click', () => {
+    mainProcess.createWindow();
 });
 
-// Listening for custom 'file-opened' event and getting file and content
+openFileButton.addEventListener('click', () => {
+    mainProcess.openFile(thisCurrentWindow);
+});
+
+markdownContainer.addEventListener('keyup', (event) => {
+    renderMarkdownToHtml(event.target.value);
+});
+
+// Listening for custom 'file-opened' event and getting file and content...
+// ...think of 'file-opened' as the chanel we want to listen to.
 ipcRenderer.on('file-opened', (event, file, content) => {
-    fileContentArea.classList.remove('hidden');
-    fileContentArea.innerHTML = content;
+    markdownContainer.value = content;
+    renderMarkdownToHtml(content);
 });
