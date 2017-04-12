@@ -24,6 +24,7 @@ openFileButton.addEventListener('click', () => {
 
 markdownContainer.addEventListener('keyup', (event) => {
     renderMarkdownToHtml(event.target.value);
+    thisCurrentWindow.setDocumentEdited(true); // Shows the "edited" dot on close button in MacOS
 });
 
 // Listening for custom 'file-opened' event and getting file and content...
